@@ -16,11 +16,12 @@ class BrownianSim:
         self.steps = 0
         self.width, self.height = width, height
         self.neighborhood = ((-1,0),(1,0),(0,1),(0,-1))
+        self.maxVal = 16
+        self.minVal = 0
+        
         self.emptyBoard(width,height)
         self.board[height//2][width//2] = self.maxVal
         
-        self.maxVal = 16
-        self.minVal = 0
         
     def emptyBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
         self.board = np.zeros((height, width), dtype = int)
@@ -55,12 +56,12 @@ class BrownianSim:
                     #MOVE
                     dx, dy = self.chooseDirection()
                     x2, y2 = self.getDestination(x,y,dx,dy)
-                    if currentCell + self.board[y2][x2] < self.maxVal:
-                        newBoard[y][x] -= currentCell
-                        newBoard[y2][x2] += currentCell
-                        currentCell = 0 #This cell is now empty
+                    #if currentCell + self.board[y2][x2] <= self.maxVal:
+                    newBoard[y][x] -= currentCell
+                    newBoard[y2][x2] += currentCell
+                    currentCell = 0 #This cell is now empty
                 
-                if currentCell > 4:
+                if currentCell > self.maxVal:
                     #DIFFUSE
                     for dx,dy in self.neighborhood:
                         x2, y2 = self.getDestination(x,y,dx,dy)
@@ -68,6 +69,7 @@ class BrownianSim:
                             currentCell -= 1
                             newBoard[y][x] -= 1
                             newBoard[y2][x2] += 1
+                            
                         if not currentCell:
                             break
 
