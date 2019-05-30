@@ -1,0 +1,108 @@
+import numpy as np
+import random
+import pyglet
+from pyglet.window import mouse, key
+
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 480
+CELL_WIDTH = 16
+CELL_HEIGHT = 16
+RUN = True
+window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
+
+
+class BrownianSim:
+    def __init__(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
+        self.steps = 0
+        self.width, self.height = width, height
+        self.neighborhood = ((-1,0),(1,0),(0,1),(0,-1))
+        self.emptyBoard(width,height)
+        self.board[height//2][width//2] = 255
+        
+        self.maxVal = 16
+        self.minVal = 0
+        
+    def emptyBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
+        self.board = np.zeros((height, width), dtype = int)
+        
+    def randomBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
+        self.board = (np.random.random((height, width)) * self.maxVal).astype(int) 
+
+    def chooseDirection(self):
+        return random.choice(self.neighborhood)
+        
+    def getDestination(self,x,y,dx,dy):
+        return (x + dx + self.width)%self.width, (y + dy + self.height)%self.height
+
+    def drawBoard(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                currentCell = self.board[y][x]
+                if currentCell:
+                    v = int( (currentCell / self.maxVal) * 255)
+                    drawColor = (v,v,v)
+                    X1,Y1 = x * CELL_WIDTH, y * CELL_HEIGHT,
+                    X2,Y2 = X1 + CELL_WIDTH,Y1 + CELL_HEIGHT
+                    pyglet.graphics.draw(4 ,pyglet.gl.GL_POLYGON, ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', drawColor * 4 ) )
+                    
+    def updateBoard(self):
+        newBoard = np.copy(self.board)
+        for y in range(self.height):
+            for x in range(self.width):
+                currentCell = self.board[y][x]
+                
+                if currentCell > 4:
+                    #DIFFUSE
+                    for dx,dy in self.neighborhood:
+                        x2, y2 = self.getDestination(x,y,dx,dy)
+                        if self.board[y2][x2] + 1 < self.maxVal:
+                            currentCell -= 1
+                            newBoard[y][x] -= 1
+                            newBoard[y2][x2] += 1
+                
+                if currentCell and random.random() > 0.5:
+                    #MOVE
+                    dx, dy = self.chooseDirection()
+                    x2, y2 = self.getDestination(x,y,dx,dy)
+                    if currentCell + self.board[y2][x2] < self.maxVal:
+                        newBoard[y][x] -= currentCell
+                        newBoard[y2][x2] += currentCell
+
+                
+        self.board = newBoard
+        self.steps += 1
+
+TEST = BrownianSim()
+
+@window.event
+def on_draw():
+    window.clear()
+    TEST.drawBoard()
+    
+@window.event
+def on_key_press(symbol, modifiers):
+    global RUN
+    if symbol == key.P:
+        RUN = not RUN
+    elif symbol == key.R:
+        TEST.randomBoard()
+    elif symbol == key.E:
+        TEST.emptyBoard()
+    pass
+    
+    
+@window.event        
+def on_mouse_press(x, y, button, modifiers):
+    _x, _y = x // CELL_WIDTH, y // CELL_HEIGHT
+    if button == mouse.LEFT:
+        TEST.board[_y][_x] = TEST.maxVal
+    elif button == mouse.RIGHT:
+        TEST.board[_y][_x] = TEST.minVal
+           
+def update(t):
+    global RUN
+    if RUN:
+        TEST.updateBoard()
+            
+pyglet.clock.schedule_interval(update, 1/120)
+pyglet.app.run()
