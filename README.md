@@ -1,21 +1,33 @@
 # SomeBrownianMotionThing
-A little thing done with Python 3 and Pyglet that seems to simulate something akin to Brownian motion
 
-You have a grid of cells that can have a value from 0 to 16
+A little cellular automata thing done with Python 3 and Pyglet that seems to simulate something akin to Brownian motion
+
+You have a grid of cells that can have values of:
+
+* 0 (Empty space)
+* 1-15 (Gas-filled)
+* -2 (Frozen)
 
 ## At each step:
 
-* cells higher than a certain value will "Diffuse" into Adjacent cells (Orthogonal directions)
+* "Filled" cells higher than a certain value will "Diffuse" into Adjacent cells (Orthogonal directions)
 
         ....            .1..
         .5..    --->    111.
         ....            .1..
     
-* cells have a chance to "Move" into an adjacent cell
+* "Filled" cells have a chance to "Move" into an adjacent cell
     
     
         ....            ....
         .5..    --->    ..5.
+        ....            ....
+        
+* cells will freeze if adjacent to a "frozen" cell (represented by cells having a value of -2)
+    
+    
+        ....            ....
+        .5X.    --->    .XX.
         ....            ....
         
 ## Controls:
@@ -24,4 +36,4 @@ You have a grid of cells that can have a value from 0 to 16
 * **P** to Pause the simulation
 * **R** to Randomize the board
 * **Left Mouse** to set the value of a cell to 16
-* **Right Mouse** to set the value of a cell to 0
+* **Right Mouse** to toggle the value of a cell to -2 or 0
