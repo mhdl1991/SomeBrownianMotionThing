@@ -24,7 +24,11 @@ class BrownianSim:
         
         self.randomBoard(width,height)
         self.board[height//2][width//2] = -1
-      
+        
+    def set(self,x,y,n):
+        if 0 <= x < self.width and 0 <= y < self.height:
+            self.board[y][x] = n
+    
     def toggleBorder(self):
         self.wraparound = not self.wraparound
         
@@ -41,7 +45,7 @@ class BrownianSim:
             return max(0, min(x + dx, self.width-1)), max(0, min(y + dy, self.height-1))
             
     def getDestinationValue(self,x,y,dx,dy):
-        x2, y2 = self.getDestination(x,y,dx,dy)
+        x2,y2 = self.getDestination(x,y,dx,dy)
         return self.board[y2][x2]
         
     def destinationIsWithinBounds(self,x,y,dx,dy):
@@ -160,14 +164,14 @@ def on_key_press(symbol, modifiers):
     
 @window.event        
 def on_mouse_press(x, y, button, modifiers):
-    _x, _y = x // CELL_WIDTH, y // CELL_HEIGHT
+    _x, _y = (x-TEST.draw_x) // CELL_WIDTH, (y-TEST.draw_y) // CELL_HEIGHT
     if button == mouse.LEFT:
-        TEST.board[_y][_x] = TEST.maxVal
+        TEST.set(_x,_y,TEST.maxVal)
     elif button == mouse.RIGHT:
         if (TEST.board[_y][_x] == -1): 
-            TEST.board[_y][_x] = 0
+            TEST.set(_x,_y,0)
         else:
-            TEST.board[_y][_x] = -1
+            TEST.set(_x,_y,-1)
            
 def update(t):
     global RUN
