@@ -5,8 +5,8 @@ from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 640
-CELL_WIDTH = 16
-CELL_HEIGHT = 16
+CELL_WIDTH = 8
+CELL_HEIGHT = 8
 RUN = True
 window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
 
@@ -28,7 +28,7 @@ class BrownianSim:
         self.board = np.zeros((height, width), dtype = int)
         
     def randomBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
-        self.board = (np.random.random((height, width)) > 0.8).astype(int) 
+        self.board = (np.random.random((height, width)) > 0.99).astype(int) * 8
 
     def chooseDirection(self):
         return random.choice(self.neighborhood)
@@ -49,8 +49,8 @@ class BrownianSim:
                 drawBlock = False
                 
                 if currentCell > 0:
-                    v = int( (currentCell / self.maxVal) * 128)
-                    drawColor = (128 + v,0,0)
+                    v = int( (currentCell / self.maxVal) * 255)
+                    drawColor = (v,0,0)
                     drawBlock = True
                 else:
                     if currentCell < 0: drawColor = (0,255,255); drawBlock = True #ICE
@@ -70,14 +70,14 @@ class BrownianSim:
                 
                 #FREEZE
                 if currentCell > 0:
-                    freezeNearby = sum([1 for neighbor in listNeighbors if neighbor == -1])
+                    freezeNearby = sum([1 for neighbor in listNeighbors if neighbor < 0])
                     if freezeNearby > 0: 
                         newBoard[y][x] = -1
                         currentCell = -1
                          
                 
                 #DIFFUSION
-                if currentCell > 1:
+                if currentCell > 1 and random.random() > 0.6:
                     for x2,y2 in self.getListNeighborsCoords(x,y):
                         if self.board[y2][x2] == -1: continue #Avoid grid cells marked with negative numbers 
                         
@@ -137,5 +137,5 @@ def update(t):
     if RUN:
         TEST.updateBoard()
             
-pyglet.clock.schedule_interval(update, 1/120)
+pyglet.clock.schedule_interval(update, 1/180)
 pyglet.app.run()
