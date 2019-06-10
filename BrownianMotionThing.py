@@ -49,16 +49,14 @@ class BrownianSim:
                 drawBlock = False
                 
                 if currentCell > 0:
-                    v = int( (currentCell / self.maxVal) * 255)
-                    drawColor = (v,0,0)
+                    v = int( (currentCell / self.maxVal) * 192)
+                    drawColor = (64 + v,0,0)
                     drawBlock = True
                 elif currentCell < 0:
                     drawBlock = True
-                    if currentCell == -1: drawColor = (0,255,160);  #ICE
-                    elif currentCell == -2: drawColor = (0,240,176); 
-                    elif currentCell == -3: drawColor = (0,216,192); 
-                    elif currentCell == -4: drawColor = (0,192,224); 
-                    elif currentCell == -5: drawColor = (0,160,255); 
+                    b = currentCell * 16 #currentCell has values -1 to -5
+                    drawColor = (0,240 + b,175 - b);  #ICE
+                    
                     
                 if drawBlock:
                     X1,Y1 = self.draw_x + (x * CELL_WIDTH), self.draw_y + (y * CELL_HEIGHT),
