@@ -4,7 +4,7 @@ import pyglet
 from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 480
+WINDOW_HEIGHT = 640
 CELL_WIDTH = 16
 CELL_HEIGHT = 16
 RUN = True
@@ -20,7 +20,7 @@ class BrownianSim:
         self.maxVal = 8
         self.minVal = 0
         
-        self.emptyBoard(width,height)
+        self.randomBoard(width,height)
         self.board[height//2][width//2] = -1
         
         
@@ -36,9 +36,11 @@ class BrownianSim:
     def getDestination(self,x,y,dx,dy):
         return (x + dx + self.width)%self.width, (y + dy + self.height)%self.height
 
+    def getListNeighborsCoords(self,x,y):
+        return [self.getDestination(x,y,dx,dy) for dx,dy in self.neighborhood]
+        
     def getListNeighbors(self,x,y):
-        list_coords = [self.getDestination(x,y,dx,dy) for dx,dy in self.neighborhood]
-        return [self.board[j][i] for i,j in list_coords]
+        return [self.board[j][i] for i,j in self.getListNeighborsCoords(x,y)]
 
     def drawBoard(self):
         for y in range(self.height):
@@ -51,7 +53,6 @@ class BrownianSim:
                     drawColor = (128 + v,0,0)
                     drawBlock = True
                 else:
-                    #if currentCell == -1: drawColor = (240,240,240); drawBlock = True #SOLID
                     if currentCell < 0: drawColor = (0,255,255); drawBlock = True #ICE
                     
                 if drawBlock:
@@ -72,20 +73,21 @@ class BrownianSim:
                     freezeNearby = sum([1 for neighbor in listNeighbors if neighbor == -1])
                     if freezeNearby: 
                         newBoard[y][x] = -1
-                        break #currentCell = -1
+                        break 
                 
                 #DIFFUSION
                 if currentCell > 1:
-                    list_coords = [self.getDestination(x,y,dx,dy) for dx,dy in self.neighborhood]
-                    for x2,y2 in list_coords:
-                        if self.board[y2][x2] > -1: #Avoid grid cells marked with negative numbers 
-                            if self.board[y2][x2] + 1 < self.maxVal:
-                                currentCell -= 1
+                    for x2,y2 in self.getListNeighborsCoords(x,y):
+                        if self.board[y2][x2] == -1: continue #Avoid grid cells marked with negative numbers 
+                        
+                        if self.board[y2][x2] + 1 < self.maxVal:
+                            if currentCell: 
                                 newBoard[y][x] -= 1
-                                newBoard[y2][x2] += 1    
+                                newBoard[y2][x2] += 1
+                                currentCell -= 1 
+                            else: 
+                                break
                                 
-                        if currentCell <=0: break
-                
                 #MOVEMENT
                 if currentCell > 0: 
                     dx, dy = self.chooseDirection()
