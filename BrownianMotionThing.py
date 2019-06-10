@@ -5,8 +5,8 @@ from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 640
-CELL_WIDTH = 8
-CELL_HEIGHT = 8
+CELL_WIDTH = 16
+CELL_HEIGHT = 16
 RUN = True
 window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
 
@@ -52,8 +52,13 @@ class BrownianSim:
                     v = int( (currentCell / self.maxVal) * 255)
                     drawColor = (v,0,0)
                     drawBlock = True
-                else:
-                    if currentCell < 0: drawColor = (0,255,255); drawBlock = True #ICE
+                elif currentCell < 0:
+                    drawBlock = True
+                    if currentCell == -1: drawColor = (0,255,160);  #ICE
+                    elif currentCell == -2: drawColor = (0,240,176); 
+                    elif currentCell == -3: drawColor = (0,216,192); 
+                    elif currentCell == -4: drawColor = (0,192,224); 
+                    elif currentCell == -5: drawColor = (0,160,255); 
                     
                 if drawBlock:
                     X1,Y1 = self.draw_x + (x * CELL_WIDTH), self.draw_y + (y * CELL_HEIGHT),
@@ -69,12 +74,20 @@ class BrownianSim:
                 listNeighbors = self.getListNeighbors(x,y)
                 
                 #FREEZE
+                freezeNearby = sum([1 for neighbor in listNeighbors if neighbor < 0])
+                
                 if currentCell > 0:
-                    freezeNearby = sum([1 for neighbor in listNeighbors if neighbor < 0])
                     if freezeNearby > 0: 
                         newBoard[y][x] = -1
                         currentCell = -1
-                         
+                        
+                #AESTHETIC FREEZING        
+                if currentCell < 0:
+                    if freezeNearby == 0: newBoard[y][x] = -1; currentCell = -1
+                    if freezeNearby == 1: newBoard[y][x] = -2; currentCell = -2
+                    if freezeNearby == 2: newBoard[y][x] = -3; currentCell = -3
+                    if freezeNearby == 3: newBoard[y][x] = -4; currentCell = -4
+                    if freezeNearby == 4: newBoard[y][x] = -5; currentCell = -5
                 
                 #DIFFUSION
                 if currentCell > 1 and random.random() > 0.6:
