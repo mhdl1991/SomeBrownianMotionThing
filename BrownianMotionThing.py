@@ -71,9 +71,10 @@ class BrownianSim:
                 #FREEZE
                 if currentCell > 0:
                     freezeNearby = sum([1 for neighbor in listNeighbors if neighbor == -1])
-                    if freezeNearby: 
+                    if freezeNearby > 0: 
                         newBoard[y][x] = -1
-                        break 
+                        currentCell = -1
+                         
                 
                 #DIFFUSION
                 if currentCell > 1:
@@ -85,8 +86,7 @@ class BrownianSim:
                                 newBoard[y][x] -= 1
                                 newBoard[y2][x2] += 1
                                 currentCell -= 1 
-                            else: 
-                                break
+
                                 
                 #MOVEMENT
                 if currentCell > 0: 
