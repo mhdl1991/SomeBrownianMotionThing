@@ -31,7 +31,8 @@ You have a grid of cells that can have values of:
         ....            ....
         
 ## Controls:
-    
+
+* **W** to Toggle Border (prevents cells from "wrapping around")
 * **E** to Clear out the entire board
 * **P** to Pause the simulation
 * **R** to Randomize the board
