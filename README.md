@@ -5,18 +5,18 @@ A little cellular automata thing done with Python 3 and Pyglet that seems to sim
 You have a grid of cells that can have values of:
 
 * 0 (Empty space)
-* 1-15 (Gas-filled)
-* -2 (Frozen)
+* 1-8 (Gas-filled)
+* -1 (Frozen/Solid)
 
 ## At each step:
 
-* "Filled" cells higher than a certain value will "Diffuse" into Adjacent cells (Orthogonal directions)
+* "Filled" cells higher than a certain value will "Diffuse" into Adjacent cells (Orthogonal directions) so long as they are not solid
 
         ....            .1..
         .5..    --->    111.
         ....            .1..
     
-* "Filled" cells have a chance to "Move" into an adjacent cell
+* "Filled" cells have a chance to "Move" into an adjacent non-solid cell
     
     
         ....            ....
@@ -35,5 +35,5 @@ You have a grid of cells that can have values of:
 * **E** to Clear out the entire board
 * **P** to Pause the simulation
 * **R** to Randomize the board
-* **Left Mouse** to set the value of a cell to 16
-* **Right Mouse** to toggle the value of a cell to -2 or 0
+* **Left Mouse** to set the value of a cell to 8
+* **Right Mouse** to toggle the value of a cell to -1 or 0
