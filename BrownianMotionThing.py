@@ -8,7 +8,6 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 640
 CELL_WIDTH = 16
 CELL_HEIGHT = 16
-RUN = True
 window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
 
 
