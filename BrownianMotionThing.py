@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import pyglet
+from pyglet import font 
 from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
@@ -12,7 +13,7 @@ window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
 
 
 class BrownianSim:
-    def __init__(self, width = (WINDOW_WIDTH//CELL_WIDTH) -2, height = (WINDOW_HEIGHT//CELL_HEIGHT) -2, draw_x = CELL_WIDTH, draw_y = CELL_HEIGHT):
+    def __init__(self, width = (WINDOW_WIDTH//CELL_WIDTH) -2, height = (WINDOW_HEIGHT//CELL_HEIGHT) -4, draw_x = CELL_WIDTH, draw_y = CELL_HEIGHT*2):
         self.steps = 0
         self.width, self.height = width, height
         self.draw_x, self.draw_y = draw_x, draw_y
@@ -21,22 +22,44 @@ class BrownianSim:
         self.minVal = 0
         
         self.wraparound = False
+        self.showstats = True
+        self.isPaused = False
         
         self.randomBoard(width,height)
         self.board[height//2][width//2] = -1
+        ft = font.load("Terminal", 12)
+        self.pauseLabel = font.Text(ft, x = draw_x, y = draw_y - 16)
+        self.statsText = font.Text(ft, x = draw_x, y = draw_y + (self.height * CELL_HEIGHT) + 8)
+        #self.gasCounter = font.Text(ft, x = draw_x + 128, y = draw_y + (self.height * CELL_HEIGHT) + 8)
+        #self.iceCounter = font.Text(ft, x = draw_x + 256, y = draw_y + (self.height * CELL_HEIGHT) + 8)
         
     def set(self,x,y,n):
         if 0 <= x < self.width and 0 <= y < self.height:
             self.board[y][x] = n
     
+    def pause(self):
+        self.isPaused = not self.isPaused
+    
     def toggleBorder(self):
         self.wraparound = not self.wraparound
+    
+    def toggleText(self):
+        self.showstats = not self.showstats
         
     def emptyBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
         self.board = np.zeros((height, width), dtype = int)
         
     def randomBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
         self.board = (np.random.random((height, width)) > 0.96).astype(int) * self.maxVal
+
+    def countGasParticles(self):
+        #return how many cells in the board are gas particles
+        return len(np.where(self.board > 0)[0])
+    
+    def countIceParticles(self):
+        #return how many cells in the board are gas particles
+        return len(np.where(self.board < 0)[0])
+
 
     def getDestination(self,x,y,dx,dy):
         if self.wraparound:
@@ -80,14 +103,31 @@ class BrownianSim:
                     X2,Y2 = X1 + CELL_WIDTH,Y1 + CELL_HEIGHT
                     pyglet.graphics.draw(4 ,pyglet.gl.GL_POLYGON, ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', drawColor * 4 ) )
                     
+                    
         #DRAW BORDER
-        if not self.wraparound:
-            X1,Y1 = self.draw_x, self.draw_y,
-            X2,Y2 = X1 + (CELL_WIDTH*self.width),Y1 + (CELL_HEIGHT*self.height)
-            pyglet.graphics.draw(8 ,pyglet.gl.GL_LINES, ('v2i',[X1,Y1, X2,Y1,  X2,Y1, X2,Y2,  X1,Y2, X2,Y2,  X1,Y1, X1,Y2] ), ('c3B', (255,255,255)* 8 ) )
-          
-          
+        #if not self.wraparound:
+        X1,Y1 = self.draw_x, self.draw_y,
+        X2,Y2 = X1 + (CELL_WIDTH*self.width),Y1 + (CELL_HEIGHT*self.height)
+        pyglet.graphics.draw(8 ,pyglet.gl.GL_LINES, ('v2i',[X1,Y1, X2,Y1,  X2,Y1, X2,Y2,  X1,Y2, X2,Y2,  X1,Y1, X1,Y2] ), ('c3B', (255,255,255)* 8 ) )
+            
+        #DRAW STATISTICS
+        if self.isPaused:
+            self.pauseLabel.text = "PAUSED"
+            self.pauseLabel.draw()
+            
+        if self.showstats:
+            self.statsText.text = "Steps: %d\t\tGas: %d\t\tIce: %d\t\tBorder: %s"%(self.steps, self.countGasParticles(), self.countIceParticles(), str(self.wraparound))
+            self.statsText.draw()
+            #self.timeStepsCounter.text = "Steps: %d"%self.steps
+            #self.gasCounter.text = "Gas: %d"%self.countGasParticles()
+            #self.iceCounter.text = "Ice: %d"%self.countIceParticles()
+            #self.timeStepsCounter.draw()
+            #self.gasCounter.draw()
+            #self.iceCounter.draw()
+            
     def updateBoard(self):
+        if self.isPaused: return
+        
         newBoard = np.copy(self.board)
         for y in range(self.height):
             for x in range(self.width):
@@ -146,10 +186,9 @@ def on_draw():
     
 @window.event
 def on_key_press(symbol, modifiers):
-    global RUN
     if symbol == key.P:
         #PAUSE SIMULATION
-        RUN = not RUN
+        TEST.pause()
     elif symbol == key.R:
         #RANDOMIZE THE BOARD
         TEST.randomBoard()
@@ -159,6 +198,9 @@ def on_key_press(symbol, modifiers):
     elif symbol == key.W:
         #TOGGLE BORDER
         TEST.toggleBorder()
+    elif symbol == key.T:
+        #TOGGLE BORDER
+        TEST.toggleText()
     pass
     
     
@@ -174,9 +216,7 @@ def on_mouse_press(x, y, button, modifiers):
             TEST.set(_x,_y,-1)
            
 def update(t):
-    global RUN
-    if RUN:
-        TEST.updateBoard()
+    TEST.updateBoard()
             
 pyglet.clock.schedule_interval(update, 1/180)
 pyglet.app.run()
