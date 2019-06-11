@@ -127,7 +127,7 @@ class BrownianSim:
             self.pauseLabel.draw()
             
         if self.showstats:
-            self.statsText.text = "Steps: %d\t\tGas: %d\t\tIce: %d\t\tBorder: %s"%(self.steps, self.countGasParticles(), self.countIceParticles(), str(self.wraparound))
+            self.statsText.text = "Steps: %d\t\tGas: %d\t\tIce: %d\t\tLooping: %s"%(self.steps, self.countGasParticles(), self.countIceParticles(), str(self.wraparound))
             self.statsText.draw()
             
             self.coordText.text = "X: %d Y: %d"%(self.cursor_x, self.cursor_y)
