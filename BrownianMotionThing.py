@@ -29,12 +29,19 @@ class BrownianSim:
         ft = font.load("Terminal", 12)
         self.pauseLabel = font.Text(ft, x = draw_x, y = draw_y - 16)
         self.statsText = font.Text(ft, x = draw_x, y = draw_y + (self.height * CELL_HEIGHT) + 8)
-        #self.gasCounter = font.Text(ft, x = draw_x + 128, y = draw_y + (self.height * CELL_HEIGHT) + 8)
-        #self.iceCounter = font.Text(ft, x = draw_x + 256, y = draw_y + (self.height * CELL_HEIGHT) + 8)
+        
+        
+        self.cursor_x, self.cursor_y = 0,0
+        self.coordText = font.Text(ft, x = draw_x + (self.width * CELL_WIDTH) - 128, y = draw_y + (self.height * CELL_HEIGHT) + 8)
         
     def set(self,x,y,n):
         if 0 <= x < self.width and 0 <= y < self.height:
             self.board[y][x] = n
+    
+    def getMouseCoordinates(self, x, y):
+        if self.draw_x <= x < self.draw_x + (self.width * CELL_WIDTH) and self.draw_y <= y < self.draw_y + (self.height * CELL_HEIGHT):
+            self.cursor_x = (x - self.draw_x) // CELL_WIDTH
+            self.cursor_y = (y - self.draw_y) // CELL_HEIGHT
     
     def pause(self):
         self.isPaused = not self.isPaused
@@ -104,11 +111,16 @@ class BrownianSim:
                     
                     
         #DRAW BORDER
-        #if not self.wraparound:
         X1,Y1 = self.draw_x, self.draw_y,
         X2,Y2 = X1 + (CELL_WIDTH*self.width),Y1 + (CELL_HEIGHT*self.height)
         pyglet.graphics.draw(8 ,pyglet.gl.GL_LINES, ('v2i',[X1,Y1, X2,Y1,  X2,Y1, X2,Y2,  X1,Y2, X2,Y2,  X1,Y1, X1,Y2] ), ('c3B', (255,255,255)* 8 ) )
             
+        #DRAW CURSOR
+        X1,Y1 = self.draw_x + (self.cursor_x * CELL_WIDTH),  self.draw_y + (self.cursor_y * CELL_HEIGHT),
+        X2,Y2 = X1 + CELL_WIDTH,Y1 + CELL_HEIGHT
+        pyglet.graphics.draw(8 ,pyglet.gl.GL_LINES, ('v2i',[X1,Y1, X2,Y1,  X2,Y1, X2,Y2,  X1,Y2, X2,Y2,  X1,Y1, X1,Y2] ), ('c3B', (255,255,255)* 8 ) )
+        
+        
         #DRAW STATISTICS
         if self.isPaused:
             self.pauseLabel.text = "PAUSED"
@@ -117,12 +129,10 @@ class BrownianSim:
         if self.showstats:
             self.statsText.text = "Steps: %d\t\tGas: %d\t\tIce: %d\t\tBorder: %s"%(self.steps, self.countGasParticles(), self.countIceParticles(), str(self.wraparound))
             self.statsText.draw()
-            #self.timeStepsCounter.text = "Steps: %d"%self.steps
-            #self.gasCounter.text = "Gas: %d"%self.countGasParticles()
-            #self.iceCounter.text = "Ice: %d"%self.countIceParticles()
-            #self.timeStepsCounter.draw()
-            #self.gasCounter.draw()
-            #self.iceCounter.draw()
+            
+            self.coordText.text = "X: %d Y: %d"%(self.cursor_x, self.cursor_y)
+            self.coordText.draw()
+
             
     def updateBoard(self):
         if self.isPaused: return
@@ -198,18 +208,22 @@ def on_key_press(symbol, modifiers):
         #TOGGLE BORDER
         TEST.toggleBorder()
     elif symbol == key.T:
-        #TOGGLE BORDER
+        #TOGGLE TEXT
         TEST.toggleText()
     pass
-    
+
+@window.event
+def on_mouse_motion(x,y,dx,dy):
+    TEST.getMouseCoordinates(x,y)
     
 @window.event        
 def on_mouse_press(x, y, button, modifiers):
-    _x, _y = (x-TEST.draw_x) // CELL_WIDTH, (y-TEST.draw_y) // CELL_HEIGHT
+    #_x, _y = (x-TEST.draw_x) // CELL_WIDTH, (y-TEST.draw_y) // CELL_HEIGHT
+    _x, _y = TEST.cursor_x, TEST.cursor_y
     if button == mouse.LEFT:
         TEST.set(_x,_y,TEST.maxVal)
     elif button == mouse.RIGHT:
-        if (TEST.board[_y][_x] == -1): 
+        if (TEST.board[_y][_x] <= -1): 
             TEST.set(_x,_y,0)
         else:
             TEST.set(_x,_y,-1)
