@@ -36,5 +36,6 @@ You have a grid of cells that can have values of:
 * **E** to Clear out the entire board
 * **P** to Pause the simulation
 * **R** to Randomize the board
+* **T** to Toggle statistics display (line of text that tells you steps elapsed, number of "Gas" cells, number of "Ice" cells, whether the border is turned on)
 * **Left Mouse** to set the value of a cell to 8
 * **Right Mouse** to toggle the value of a cell to -1 or 0
