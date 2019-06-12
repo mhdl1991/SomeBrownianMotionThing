@@ -1,7 +1,4 @@
-import numpy as np
-import random
-import pyglet
-from pyglet import font 
+import numpy, random, pyglet
 from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
@@ -9,7 +6,6 @@ WINDOW_HEIGHT = 640
 CELL_WIDTH = 16
 CELL_HEIGHT = 16
 window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
-
 
 class BrownianSim:
     def __init__(self, width = (WINDOW_WIDTH//CELL_WIDTH) -2, height = (WINDOW_HEIGHT//CELL_HEIGHT) -4, draw_x = CELL_WIDTH, draw_y = CELL_HEIGHT*2):
@@ -20,19 +16,19 @@ class BrownianSim:
         self.maxVal = 6
         self.minVal = 0
         
+        self.cursor_x, self.cursor_y = 0,0
+        
         self.wraparound = False
         self.showstats = True
         self.isPaused = False
         
+        ft = pyglet.font.load("Terminal", 12)
+        self.pauseLabel = pyglet.font.Text(ft, x = draw_x, y = draw_y - 16)
+        self.statsText = pyglet.font.Text(ft, x = draw_x, y = draw_y + (self.height * CELL_HEIGHT) + 8)
+        self.coordText = pyglet.font.Text(ft, x = draw_x + (self.width * CELL_WIDTH) - 128, y = draw_y + (self.height * CELL_HEIGHT) + 8)
+        
         self.randomBoard(width,height)
         self.board[height//2][width//2] = -1
-        ft = font.load("Terminal", 12)
-        self.pauseLabel = font.Text(ft, x = draw_x, y = draw_y - 16)
-        self.statsText = font.Text(ft, x = draw_x, y = draw_y + (self.height * CELL_HEIGHT) + 8)
-        
-        
-        self.cursor_x, self.cursor_y = 0,0
-        self.coordText = font.Text(ft, x = draw_x + (self.width * CELL_WIDTH) - 128, y = draw_y + (self.height * CELL_HEIGHT) + 8)
         
     def set(self,x,y,n):
         if 0 <= x < self.width and 0 <= y < self.height:
@@ -53,19 +49,22 @@ class BrownianSim:
         self.showstats = not self.showstats
         
     def emptyBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
-        self.board = np.zeros((height, width), dtype = int)
+        #reset step counter?
+        self.steps = 0
+        self.board = numpy.zeros((height, width), dtype = int)
         
     def randomBoard(self, width = WINDOW_WIDTH//CELL_WIDTH, height = WINDOW_HEIGHT//CELL_HEIGHT):
-        self.board = (np.random.random((height, width)) > 0.96).astype(int) * self.maxVal
+        #reset step counter?
+        self.steps = 0
+        self.board = (numpy.random.random((height, width)) > 0.95).astype(int) * self.maxVal
 
     def countGasParticles(self):
         #return how many cells in the board are gas particles
-        return len(np.where(self.board > 0)[0])
+        return len(numpy.where(self.board > 0)[0])
     
     def countIceParticles(self):
         #return how many cells in the board are gas particles
-        return len(np.where(self.board < 0)[0])
-
+        return len(numpy.where(self.board < 0)[0])
 
     def getDestination(self,x,y,dx,dy):
         if self.wraparound:
@@ -137,7 +136,7 @@ class BrownianSim:
     def updateBoard(self):
         if self.isPaused: return
         
-        newBoard = np.copy(self.board)
+        newBoard = numpy.copy(self.board)
         for y in range(self.height):
             for x in range(self.width):
                 currentCell = self.board[y][x]
@@ -154,14 +153,14 @@ class BrownianSim:
                 if currentCell > 0 and freezeNearby: 
                     newBoard[y][x] = -1
                     currentCell = -1
+                    
+                if currentCell == 0 and freezeNearby >= 4:
+                    newBoard[y][x] = -1
+                    currentCell = -1                
                         
                 #AESTHETIC FREEZING        
                 if currentCell < 0:
-                    if freezeNearby == 0: newBoard[y][x] = -1; currentCell = -1
-                    if freezeNearby == 1: newBoard[y][x] = -2; currentCell = -2
-                    if freezeNearby == 2: newBoard[y][x] = -3; currentCell = -3
-                    if freezeNearby == 3: newBoard[y][x] = -4; currentCell = -4
-                    if freezeNearby == 4: newBoard[y][x] = -5; currentCell = -5
+                    newBoard[y][x] = -1- freezeNearby; currentCell = -1 - freezeNearby
                             
                 if validDirections:
                     #DIFFUSION
