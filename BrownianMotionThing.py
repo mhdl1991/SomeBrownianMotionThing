@@ -106,7 +106,8 @@ class BrownianSim:
                 if drawBlock:
                     X1,Y1 = self.draw_x + (x * CELL_WIDTH), self.draw_y + (y * CELL_HEIGHT),
                     X2,Y2 = X1 + CELL_WIDTH,Y1 + CELL_HEIGHT
-                    pyglet.graphics.draw(4 ,pyglet.gl.GL_POLYGON, ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', drawColor * 4 ) )
+                    pyglet.graphics.draw_indexed(4 ,pyglet.gl.GL_TRIANGLES,  (0,1,2,0,2,3),  ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', drawColor * 4 ) )
+                    #pyglet.graphics.draw(4 ,pyglet.gl.GL_POLYGON, ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', drawColor * 4 ) )
                     
                     
         #DRAW BORDER
